@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks_timer/timer_hook.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,53 +18,122 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: HomePageHook3(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  late Timer timer;
+  int _number = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+  @override
+  void initState() {
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        _number = timer.tick;
+      });
     });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('Hooks in Flutter'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+        child: Center(
+          child: Text(
+            '$_number',
+            style: Theme.of(context).textTheme.headline4,
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+    );
+  }
+}
+
+class HomePageHook extends HookWidget {
+  @override
+  Widget build(BuildContext context) {
+    final _numberNotifier = useState(0);
+
+    useEffect(
+      () {
+        final timer = Timer.periodic(Duration(seconds: 1), (timer) {
+          _numberNotifier.value = timer.tick;
+        });
+        return timer.cancel;
+      },
+      const [],
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hooks in Flutter'),
+      ),
+      body: Center(
+        child: Center(
+          child: Text(
+            '${_numberNotifier.value}',
+            style: Theme.of(context).textTheme.headline4,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HomePageHook2 extends HookWidget {
+  @override
+  Widget build(BuildContext context) {
+    final int number = useInfiniteTimer(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hooks in Flutter'),
+      ),
+      body: Center(
+        child: Center(
+          child: Text(
+            '$number',
+            style: Theme.of(context).textTheme.headline4,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HomePageHook3 extends HookWidget {
+  @override
+  Widget build(BuildContext context) {
+    final int number = useInfiniteTimer(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hooks in Flutter'),
+      ),
+      body: Center(
+        child: Center(
+          child: Text(
+            '$number',
+            style: Theme.of(context).textTheme.headline4,
+          ),
+        ),
       ),
     );
   }
